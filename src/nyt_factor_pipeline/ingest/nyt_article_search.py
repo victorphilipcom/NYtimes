@@ -194,7 +194,7 @@ def _upsert_articles(conn: duckdb.DuckDBPyConnection, articles: list) -> None:
                 importance_score, macro_relevance_score
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT (article_id) DO UPDATE SET
-                updated_at = current_timestamp""",
+                updated_at = now()""",
             [
                 article.article_id,
                 article.source_api,

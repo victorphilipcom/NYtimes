@@ -146,7 +146,7 @@ def rebuild_normalized_text():
     for article_id, headline, abstract, snippet, lead, kw_json in rows:
         nt = build_normalized_text(headline or "", abstract or "", snippet or "", lead or "", kw_json or "[]")
         conn.execute(
-            "UPDATE articles SET normalized_text = ?, updated_at = current_timestamp WHERE article_id = ?",
+            "UPDATE articles SET normalized_text = ?, updated_at = now() WHERE article_id = ?",
             [nt, article_id],
         )
         count += 1

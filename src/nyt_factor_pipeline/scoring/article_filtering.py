@@ -97,7 +97,7 @@ def compute_macro_relevance(conn: duckdb.DuckDBPyConnection) -> int:
             WHEN normalized_text IS NULL OR LENGTH(normalized_text) < 50 THEN 0.0
             ELSE 1.0
         END,
-        updated_at = current_timestamp
+        updated_at = now()
         WHERE macro_relevance_score = 0"""
     )
 
