@@ -31,6 +31,7 @@ dependencies = [
 
 [project.optional-dependencies]
 openai = ["openai>=1.12.0"]
+supabase = ["psycopg2-binary>=2.9.9"]
 dev = [
     "pytest>=8.0.0",
     "pytest-cov>=4.1.0",
@@ -40,7 +41,7 @@ dev = [
     "jupyter>=1.0.0",
     "nbformat>=5.9.0",
 ]
-all = ["nyt-factor-pipeline[openai,dev]"]
+all = ["nyt-factor-pipeline[openai,supabase,dev]"]
 
 [project.scripts]
 nyt-pipeline = "nyt_factor_pipeline.cli:cli"

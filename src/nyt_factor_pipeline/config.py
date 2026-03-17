@@ -21,6 +21,7 @@ class Settings(BaseSettings):
 
     # --- Database ---
     db_path: Path = Path("data/nyt_pipeline.duckdb")
+    database_url: str = ""  # PostgreSQL/Supabase connection string for export
 
     # --- Embeddings ---
     embedding_backend: str = "local"  # "local" or "openai"

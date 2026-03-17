@@ -1,0 +1,77 @@
+name: Weekly NYT Theme Update
+
+on:
+  schedule:
+    # Every Monday at 6:00 AM UTC (1 AM EST / 10 PM PST Sunday)
+    - cron: "0 6 * * 1"
+  workflow_dispatch: # Allow manual trigger
+
+env:
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  incremental-update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[all]"
+
+      - name: Restore DuckDB cache
+        uses: actions/cache@v4
+        with:
+          path: data/nyt_pipeline.duckdb
+          key: nyt-duckdb-${{ github.ref }}-${{ github.run_number }}
+          restore-keys: |
+            nyt-duckdb-${{ github.ref }}-
+            nyt-duckdb-
+
+      - name: Initialize database
+        run: nyt-pipeline init-db
+
+      - name: Run incremental update
+        env:
+          NYT_API_KEY: ${{ secrets.NYT_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          # Run the incremental pipeline (ingest new articles, score, embed,
+          # cluster, track themes, build timeseries, regenerate dashboard).
+          # If DATABASE_URL is set, also sync results to Supabase/PostgreSQL.
+          if [ -n "$DATABASE_URL" ]; then
+            nyt-pipeline run-incremental-update --sync-supabase
+          else
+            nyt-pipeline run-incremental-update
+          fi
+
+      - name: Upload dashboard artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: theme-dashboard
+          path: data/artifacts/theme_dashboard.html
+          retention-days: 30
+
+      - name: Commit updated database
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Only commit if DuckDB changed
+          if git diff --quiet data/nyt_pipeline.duckdb 2>/dev/null; then
+            echo "No database changes to commit"
+          else
+            git add data/nyt_pipeline.duckdb data/artifacts/theme_dashboard.html || true
+            git commit -m "chore: weekly theme update $(date +%Y-%m-%d)" || true
+            git push || true
+          fi

@@ -394,7 +394,8 @@ def run_backfill(start: str, end: str, force: bool):
 
 @cli.command()
 @click.option("--end-date", default=None, help="End date (default: today)")
-def run_incremental_update(end_date: str | None):
+@click.option("--sync-supabase", is_flag=True, help="Push results to Supabase/PostgreSQL after update")
+def run_incremental_update(end_date: str | None, sync_supabase: bool):
     """Run incremental update: ingest recent -> score -> embed -> cluster -> track."""
     conn = init_db()
 
@@ -451,7 +452,62 @@ def run_incremental_update(end_date: str | None):
         path = _gen_dash(conn)
         click.echo(f"Dashboard updated: {path}")
 
+    # Sync to Supabase/PostgreSQL if requested
+    if sync_supabase:
+        settings = get_settings()
+        if not settings.database_url:
+            click.echo("ERROR: DATABASE_URL not set. Skipping Supabase sync.")
+        else:
+            click.echo("Syncing to Supabase/PostgreSQL...")
+            from nyt_factor_pipeline.export.supabase_sync import sync_all
+            results = sync_all(conn, settings.database_url)
+            for table, count in results.items():
+                click.echo(f"  {table}: {count} rows")
+
     click.echo("Incremental update complete!")
+    conn.close()
+
+
+@cli.command()
+def sync_supabase():
+    """Push all DuckDB data to Supabase/PostgreSQL (DATABASE_URL)."""
+    settings = get_settings()
+    if not settings.database_url:
+        click.echo("ERROR: Set DATABASE_URL in .env (e.g. postgresql://user:pass@host:5432/db)")
+        return
+
+    conn = init_db()
+    from nyt_factor_pipeline.export.supabase_sync import sync_all
+
+    click.echo(f"Syncing to PostgreSQL...")
+    results = sync_all(conn, settings.database_url, incremental=True)
+    for table, count in results.items():
+        click.echo(f"  {table}: {count} rows")
+
+    click.echo("Sync complete!")
+    conn.close()
+
+
+@cli.command()
+@click.option("--full", is_flag=True, help="Full sync (ignore last_synced_at)")
+@click.option("--tables", default=None, help="Comma-separated table names to sync")
+def sync_supabase_full(full: bool, tables: str | None):
+    """Full re-sync of DuckDB data to Supabase/PostgreSQL."""
+    settings = get_settings()
+    if not settings.database_url:
+        click.echo("ERROR: Set DATABASE_URL in .env")
+        return
+
+    conn = init_db()
+    from nyt_factor_pipeline.export.supabase_sync import sync_all
+
+    table_list = [t.strip() for t in tables.split(",")] if tables else None
+    click.echo("Full sync to PostgreSQL...")
+    results = sync_all(conn, settings.database_url, incremental=not full, tables=table_list)
+    for table, count in results.items():
+        click.echo(f"  {table}: {count} rows")
+
+    click.echo("Sync complete!")
     conn.close()
 
 
