@@ -139,7 +139,7 @@ def score_articles_in_db(conn) -> int:
             word_count=wc or 0,
         )
         conn.execute(
-            "UPDATE articles SET importance_score = ?, updated_at = current_timestamp WHERE article_id = ?",
+            "UPDATE articles SET importance_score = ?, updated_at = now() WHERE article_id = ?",
             [score, article_id],
         )
         count += 1
