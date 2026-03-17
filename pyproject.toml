@@ -1,0 +1,66 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "nyt-factor-pipeline"
+version = "0.1.0"
+description = "NYT theme discovery pipeline for factor investing research"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [{ name = "NYT Factor Pipeline Team" }]
+
+dependencies = [
+    "duckdb>=1.0.0",
+    "httpx>=0.27.0",
+    "pydantic>=2.5.0",
+    "pydantic-settings>=2.1.0",
+    "python-dotenv>=1.0.0",
+    "click>=8.1.0",
+    "numpy>=1.26.0",
+    "scikit-learn>=1.4.0",
+    "hdbscan>=0.8.33",
+    "sentence-transformers>=2.6.0",
+    "structlog>=24.1.0",
+    "tenacity>=8.2.0",
+    "rich>=13.7.0",
+    "pandas>=2.2.0",
+    "tqdm>=4.66.0",
+]
+
+[project.optional-dependencies]
+openai = ["openai>=1.12.0"]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=4.1.0",
+    "ruff>=0.3.0",
+    "mypy>=1.8.0",
+    "ipykernel>=6.29.0",
+    "jupyter>=1.0.0",
+    "nbformat>=5.9.0",
+]
+all = ["nyt-factor-pipeline[openai,dev]"]
+
+[project.scripts]
+nyt-pipeline = "nyt_factor_pipeline.cli:cli"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/nyt_factor_pipeline"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+src = ["src"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP", "B", "SIM"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true

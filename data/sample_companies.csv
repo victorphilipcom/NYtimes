@@ -1,0 +1,21 @@
+company_id,ticker,company_name,rbics_code,rbics_name
+AAPL,AAPL,Apple Inc,tech_consumer_electronics,Consumer Electronics
+MSFT,MSFT,Microsoft Corp,tech_software_infrastructure,Software - Infrastructure
+GOOGL,GOOGL,Alphabet Inc,tech_internet_services,Internet Services & Infrastructure
+AMZN,AMZN,Amazon.com Inc,retail_internet_direct,Internet & Direct Marketing Retail
+META,META,Meta Platforms Inc,tech_internet_services,Internet Services & Infrastructure
+NVDA,NVDA,NVIDIA Corp,tech_semiconductors,Semiconductors
+JPM,JPM,JPMorgan Chase & Co,fin_commercial_banking,Commercial Banking
+BAC,BAC,Bank of America Corp,fin_commercial_banking,Commercial Banking
+GS,GS,Goldman Sachs Group,fin_investment_banking,Investment Banking & Brokerage
+XOM,XOM,Exxon Mobil Corp,energy_oil_gas_integrated,Oil & Gas - Integrated
+CVX,CVX,Chevron Corp,energy_oil_gas_integrated,Oil & Gas - Integrated
+JNJ,JNJ,Johnson & Johnson,health_pharmaceuticals,Pharmaceuticals
+PFE,PFE,Pfizer Inc,health_pharmaceuticals,Pharmaceuticals
+UNH,UNH,UnitedHealth Group,health_managed_care,Managed Health Care
+TSLA,TSLA,Tesla Inc,auto_manufacturers,Automobile Manufacturers
+F,F,Ford Motor Co,auto_manufacturers,Automobile Manufacturers
+BA,BA,Boeing Co,aero_defense,Aerospace & Defense
+LMT,LMT,Lockheed Martin Corp,aero_defense,Aerospace & Defense
+WMT,WMT,Walmart Inc,retail_food_staples,Food & Staples Retailing
+DIS,DIS,Walt Disney Co,media_entertainment,Movies & Entertainment
