@@ -8,6 +8,7 @@ from nyt_factor_pipeline.ingest.checkpoints import CheckpointManager
 from nyt_factor_pipeline.ingest.nyt_client import NYTClient, NYT_BASE_URL
 from nyt_factor_pipeline.ingest.normalize import normalize_batch
 from nyt_factor_pipeline.ingest.request_budget import BudgetExhaustedError
+from nyt_factor_pipeline.ingest.storage import upsert_articles
 from nyt_factor_pipeline.logging_utils import get_logger
 from nyt_factor_pipeline.utils.dates import format_month, month_range
 
@@ -81,7 +82,7 @@ def ingest_archive(
                 continue
 
             articles = normalize_batch(docs, source_api="archive")
-            _upsert_articles(conn, articles)
+            upsert_articles(conn, articles)
 
             checkpoints.mark_completed(key, {"article_count": len(articles)})
             stats["months_fetched"] += 1
@@ -104,49 +105,3 @@ def ingest_archive(
 
     client.close()
     return stats
-
-
-def _upsert_articles(conn: duckdb.DuckDBPyConnection, articles: list) -> None:
-    """Insert or update articles into DuckDB."""
-    for article in articles:
-        conn.execute(
-            """INSERT INTO articles (
-                article_id, source_api, web_url, uri, pub_date, year, month, day,
-                headline_main, abstract, snippet, lead_paragraph, source,
-                section_name, subsection_name, news_desk, type_of_material,
-                document_type, print_section, print_page, word_count,
-                byline_original, keywords_json, multimedia_json, normalized_text,
-                importance_score, macro_relevance_score
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ON CONFLICT (article_id) DO UPDATE SET
-                updated_at = now()""",
-            [
-                article.article_id,
-                article.source_api,
-                article.web_url,
-                article.uri,
-                article.pub_date,
-                article.year,
-                article.month,
-                article.day,
-                article.headline_main,
-                article.abstract,
-                article.snippet,
-                article.lead_paragraph,
-                article.source,
-                article.section_name,
-                article.subsection_name,
-                article.news_desk,
-                article.type_of_material,
-                article.document_type,
-                article.print_section,
-                article.print_page,
-                article.word_count,
-                article.byline_original,
-                article.keywords_json,
-                article.multimedia_json,
-                article.normalized_text,
-                article.importance_score,
-                article.macro_relevance_score,
-            ],
-        )
